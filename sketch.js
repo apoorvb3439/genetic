@@ -1,5 +1,5 @@
 let agents=[];
-let number=100;
+let number=500;
 let child=[];
 
 function setup() {
