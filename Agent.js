@@ -62,8 +62,8 @@ function Agent(pos,speedx,speedy){
     }
 
     this.move=function(){
-        this.pos.x+=noise(Math.random()*100)*this.velocityx;
-        this.pos.y+=noise(Math.random()*100)*this.velocityy;
+        this.pos.x+=noise(Math.random()*100)*5*this.velocityx;
+        this.pos.y+=noise(Math.random()*100)*5*this.velocityy;
         this.collide();
 
         if(this.history.length>this.history.historySize){
