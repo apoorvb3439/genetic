@@ -27,16 +27,17 @@ function draw() {
 
 function genetizeAgents(agents){
 	for(let i=0; i<agents.length; i++){
-		if(agents[i].eatPoison()){
+		if(agents[i].eatPoison())
 			agents.splice(i,1);
-			if(child[0]!=undefined){
-				agents.push(child[0]);
-				child.shift();
-				agents.pop();
-			}
-		}
+			
+			
+				
+				
+				
+			
+		
 		else if(agents[i].eatFood()){
-			child.push(agents[i]);
+			child.push(new Agent(new Pos(agents[i].pos.x+5,agents[i].pos.y+5),agents[i].speedx,agents[i].speedy));
 		}
 
 	}
