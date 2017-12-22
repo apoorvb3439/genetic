@@ -1,7 +1,7 @@
 let obstacles=[];
-let obstacleN=4;
-let obstacleW=10;
+let obstacleN=6;
 let obstacleH=300;
+let obstacleW=20;
 
 function hitObstacles(rocketPos){
     for(let ob of obstacles){

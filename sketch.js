@@ -22,8 +22,9 @@ timesWantBest=lifespan/10;
 
 function setup() {
 	createCanvas(windowWidth-20,windowHeight-110);
-	dest=createVector(100,100);
-	src=createVector(width-100,height-100);
+
+	dest=createVector(giveRandom(50,width-50),50);
+	src=createVector(giveRandom(50,width-50),height-100);
 	generations=0;
 	bestTimer=0;
 	p=createP();
@@ -90,8 +91,8 @@ function Rocket(pos,vel,dna){
 			this.pos.add(this.vel);
 			this.acc.mult(0);
 
-			if(dist(dest.x,0,this.pos.x,0)<=destSize/2+rocketW/2){
-		        if(dist(0,dest.y,0,this.pos.y)<=destSize/2+rocketH/2){
+			if(dist(dest.x,0,this.pos.x,0)<=destSize){
+		        if(dist(0,dest.y,0,this.pos.y)<=destSize){
 		            this.done=true;
 		        }
 		    }
@@ -105,7 +106,7 @@ function Rocket(pos,vel,dna){
 	}
 
 	this.draw=function(){
-		fill(0,0,0,120);
+		fill(0,100,200,120);
 		push();
 		translate(this.pos.x,this.pos.y);
 		rotate(this.vel.heading());
