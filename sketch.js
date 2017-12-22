@@ -2,7 +2,7 @@ let population;
 let number=800;
 let generations;
 let generationP;
-let lifespan=400;
+let lifespan=500;
 let year=0;
 let p;
 let dest;
@@ -11,14 +11,14 @@ let srcSize=40;
 let destSize=srcSize;
 let maxFitP;
 let mutationRate=0.01;
-let maxForce=0.6;
+let maxForce=0.2;
 let rocketH=6;
 let rocketW=20;
 
 function setup() {
-	createCanvas(windowWidth,windowHeight);
-	src=createVector(100,100);
-	dest=createVector(width-100,height-100);
+	createCanvas(windowWidth-20,windowHeight-100);
+	dest=createVector(100,100);
+	src=createVector(width-100,height-100);
 	generations=0;
 	p=createP();
 	generationP=createP("Generations : ");
@@ -106,6 +106,7 @@ function Rocket(pos,vel,dna){
 
 	this.calcFitness=function(){
 		let d= dist(this.pos.x,this.pos.y,dest.x,dest.y);
+		this.fitness=map(this.fitness,0,width,1,0);
 		this.fitness=1/d;
 		this.fitness=pow(this.fitness,4);
 		if(this.done){
@@ -164,8 +165,12 @@ function Population(){
 		let newPopulation=[];
 		for(let i=0; i<this.rockets.length; ++i){
 			let parentA=random(this.matingPool).dna;
+			let isCrashedA=parentA.isCrashed;
 			let parentB=random(this.matingPool).dna;
-			let childDna=parentA.crossOver(parentB);
+			let isCrashedB=parentB.isCrashed;
+			let isDoneB=parentB.done;
+			let isDoneA=parentA.done;
+			let childDna=parentA.crossOver(parentB,isCrashedA,isCrashedB,isDoneA,isDoneB);
 			childDna.mutation();
 			newPopulation[i]=new Rocket(createVector(src.x,src.y),createVector(),childDna);
 		}
@@ -186,15 +191,37 @@ function Dna(genes){
 	}else{
 		this.genes=genes;
 	}
-	this.crossOver=function(partner){
+	this.crossOver=function(partner,isCrashedA,isCrashedB,isDoneA,isDoneB){
 		let newgenes=[];
 		let mid=floor(random(this.genes.length));
-
+		if(isDoneA){
+				for(let i=0; i<this.genes.length; i++){
+					newgenes[i]=this.genes[i];
+				}
+				return new Dna(newgenes);
+		}
+		if(isDoneB){
+				for(let i=0; i<this.genes.length; i++){
+					newgenes[i]=partner.genes[i];
+				}
+				return new Dna(newgenes);
+		}
 		for(let i=0; i<this.genes.length; i++){
 			if(i<=mid){
-				newgenes[i]=this.genes[i];
-			}else{
-				newgenes[i]=partner.genes[i];
+				if(!isCrashedA){
+					newgenes[i]=this.genes[i];
+				}
+				else{
+					newgenes[i]=partner.genes[i];
+				}
+			}else
+			{
+				if(!isCrashedA){
+					newgenes[i]=/*this.genes[i];*/partner.genes[i];
+				}
+				else{
+					newgenes[i]=/*partner.genes[i]*/this.genes[i];
+				}
 			}
 		}
 
