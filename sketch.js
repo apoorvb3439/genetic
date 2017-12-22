@@ -15,11 +15,17 @@ let maxForce=0.2;
 let rocketH=6;
 let rocketW=20;
 
+let genIndex=0;
+let bestIndex=0;
+let bestTimer;
+timesWantBest=lifespan/10;
+
 function setup() {
-	createCanvas(windowWidth-20,windowHeight-100);
+	createCanvas(windowWidth-20,windowHeight-110);
 	dest=createVector(100,100);
 	src=createVector(width-100,height-100);
 	generations=0;
+	bestTimer=0;
 	p=createP();
 	generationP=createP("Generations : ");
 	maxFitP=createP("MaxFit : ");
@@ -44,21 +50,25 @@ function draw() {
 	if(year>lifespan){
 		generations++;
 		year=0;
-	//	population=new Population();
-
+		//population=new Population();
 		population.evaluate();
 		population.selection();
 
 	}
 	p.html("Year : "+year);
 	generationP.html("Generations : "+generations);
-	if(year==lifespan){
-	for(let r of population.rockets){
-		if(r.isCrashed==false){
-			console.log(r);
-		}
+	if(bestTimer>timesWantBest){
+		population.findBest();
+		bestTimer=0;
 	}
-	}
+	bestTimer++;
+	push();
+	stroke(0,0,255);
+	line(dest.x+destSize/2,dest.y+destSize/2,population.rockets[bestIndex].pos.x,population.rockets[bestIndex].pos.y);
+	stroke(255,0,0);
+	line(dest.x+destSize/2,dest.y+destSize/2,population.rockets[genIndex].pos.x,population.rockets[genIndex].pos.y);
+	pop();
+	//console.log("Best : "+bestIndex+" : "+population.rockets[bestIndex].pos);
 }
 
 function Rocket(pos,vel,dna){
@@ -138,11 +148,25 @@ function Population(){
 		}
 	}
 
+	this.findBest=function(){
+		let bestDistance=width+height;
+		for(let i=0; i<this.popSize; ++i){
+			if(!this.rockets[i].isCrashed){
+				if(dist(this.rockets[i].pos.x,this.rockets[i].pos.y,dest.x,dest.y)<bestDistance){
+					bestDistance=dist(this.rockets[i].pos.x,this.rockets[i].pos.y,dest.x,dest.y);
+					bestIndex=i;
+				}
+			}
+		}
+	}
 	this.evaluate=function(){
 		for(let i=0; i<this.popSize; ++i){
 			this.rockets[i].calcFitness();
-			if(this.rockets[i].fitness>this.maxFit){
+			if(this.rockets[i].fitness>=this.maxFit){
 				this.maxFit=this.rockets[i].fitness;
+				if(!this.rockets[i].isCrashed){
+					genIndex=i;
+				}
 			}
 		}
 		maxFitP.html("MaxFit : "+this.maxFit);
@@ -151,7 +175,6 @@ function Population(){
 			this.rockets[i].fitness/=this.maxFit;
 			}
 		}
-
 
 		for(let i=0; i<this.popSize; ++i){
 			var n=this.rockets[i].fitness*100;
