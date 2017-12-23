@@ -1,3 +1,5 @@
+let bestRocket;
+
 let population;
 let number=800;
 let generations;
@@ -10,7 +12,7 @@ let src;
 let srcSize=40;
 let destSize=srcSize;
 let maxFitP;
-let mutationRate=0.01;
+let mutationRate=0.005;
 let maxForce=0.2;
 let rocketH=6;
 let rocketW=20;
@@ -37,8 +39,11 @@ function setup() {
 
 function drawSrcDest(){
 	fill(0,255,0,150);
+	push();
+	rectMode(CENTER);
 	rect(dest.x,dest.y,srcSize,srcSize);
 	rect(src.x,src.y,destSize,destSize);
+	pop();
 }
 
 function draw() {
@@ -53,8 +58,10 @@ function draw() {
 		year=0;
 		//population=new Population();
 		population.evaluate();
+		if(bestRocket){
+			bestRocket.pos=createVector(src.x,src.y,0);
+		}
 		population.selection();
-
 	}
 	p.html("Year : "+year);
 	generationP.html("Generations : "+generations);
@@ -65,9 +72,9 @@ function draw() {
 	bestTimer++;
 	push();
 	stroke(0,0,255);
-	line(dest.x+destSize/2,dest.y+destSize/2,population.rockets[bestIndex].pos.x,population.rockets[bestIndex].pos.y);
+	line(dest.x,dest.y,population.rockets[bestIndex].pos.x,population.rockets[bestIndex].pos.y);
 	stroke(255,0,0);
-	line(dest.x+destSize/2,dest.y+destSize/2,population.rockets[genIndex].pos.x,population.rockets[genIndex].pos.y);
+	line(dest.x,dest.y,population.rockets[genIndex].pos.x,population.rockets[genIndex].pos.y);
 	pop();
 	//console.log("Best : "+bestIndex+" : "+population.rockets[bestIndex].pos);
 }
@@ -77,6 +84,7 @@ function Rocket(pos,vel,dna){
 	this.isCrashed=false;
 	this.pos=pos||createVector();
 	this.vel=vel||createVector();
+	this.startVel=vel||this.vel;
 	this.acc=createVector();
 	this.dna=dna||new Dna();
 
@@ -105,13 +113,21 @@ function Rocket(pos,vel,dna){
 		}
 	}
 
-	this.draw=function(){
-		fill(0,100,200,120);
+	this.draw=function(isBest){
 		push();
-		translate(this.pos.x,this.pos.y);
-		rotate(this.vel.heading());
-		rectMode(CENTER);
-		rect(0,0,rocketW,rocketH);
+		if(!isBest){
+			fill(0,100,200,120);
+			translate(this.pos.x,this.pos.y);
+			rotate(this.vel.heading());
+			rectMode(CENTER);
+			triangle(0,-rocketH/2,0,rocketH/2,rocketW,0);
+		}else{
+			fill(0,250,0);
+			translate(this.pos.x,this.pos.y);
+			rotate(this.vel.heading());
+			rectMode(CENTER);
+			triangle(0,-rocketH,0,rocketH,2*rocketW,0);
+		}
 		pop();
 	}
 
@@ -142,10 +158,16 @@ function Population(){
 	}
 	this.matingPool=[];
 	this.maxFit=0;
+
 	this.run=function(){
 		for(i=0;i<this.popSize;++i){
 			this.rockets[i].update();
 			this.rockets[i].draw();
+		}
+		if(bestRocket){
+
+			bestRocket.update();
+			bestRocket.draw(true);
 		}
 	}
 
@@ -160,6 +182,7 @@ function Population(){
 			}
 		}
 	}
+
 	this.evaluate=function(){
 		for(let i=0; i<this.popSize; ++i){
 			this.rockets[i].calcFitness();
@@ -168,6 +191,16 @@ function Population(){
 				if(!this.rockets[i].isCrashed){
 					genIndex=i;
 				}
+			}
+
+			if(this.rockets[i].done&&bestRocket==undefined){
+				let bestGenes=[];
+				for(let i=0; i<this.rockets[i].dna.genes.length; i++){
+					bestGenes[i]=this.rockets[i].dna.genes[i];
+				}
+				bestRocket=new Rocket(createVector(src.x,src.y),this.rockets[i].startVel,new Dna(bestGenes));
+				bestRocket.done=false;
+				bestRocket.crashed=false;
 			}
 		}
 		maxFitP.html("MaxFit : "+this.maxFit);
