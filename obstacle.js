@@ -1,5 +1,5 @@
 let obstacles=[];
-let obstacleN=75;
+let obstacleN=6;
 let obstacleH=60;
 let obstacleW=4;
 
